@@ -14,10 +14,9 @@ var async = require('async');
 var vorpal = require('vorpal')();
 var cluster = require('cluster');
 var child_process = require('child_process');
-
+var initialbalance;
 var blessed = require('blessed');
 var contrib = require('blessed-contrib');
-
 var server;
 var network;
 var bplticker = {};
@@ -138,7 +137,17 @@ function getFromNode(url, cb){
     cb
   );
 }
-
+//returns the address and the balance when the balance is modified 
+  function refreshCurrentAccount(balance, address){
+    console.log("balance");
+    console.log(balance);
+    console.log(address);
+    // request({url: "http://"+server+"/api/notify/?address="+address}, function(err, response, body){
+    //   body = JSON.parse(body);
+    //   return cb(err, response, body);
+    // });
+    initialbalance = balance;
+    }
 function getBPLTicker(currency){
   request({url: "https://api.coinmarketcap.com/v1/ticker/ark/?convert="+currency}, function(err, response, body){
     bplticker[currency]=JSON.parse(body)[0];
@@ -185,6 +194,13 @@ function numberToFixed(x) {
   }
   return x;
 }
+
+// setInterval(function(){
+//     if(self.selected){
+//       self.refreshCurrentAccount();
+//     }
+// }, 8*1000);
+
 
 vorpal
   .command('connect <network>', 'Connect to network. Network is testnet or mainnet')
@@ -699,6 +715,37 @@ vorpal
       }
     });
   });
+
+//Adding notification functionality
+
+vorpal
+  .command('account monitor <address>', 'Account monitor')
+  .action(function(args, callback) {
+    var self = this;
+    if(!server){
+      self.log("Please connect to node or network before.");
+      return callback();
+    }
+    var address=args.address;
+    console.log("inside my snippet");
+    getFromNode('http://'+server+'/api/accounts?address='+address, function(err, response, body){
+      var a_response = JSON.parse(body).account;
+      if(!a_response){
+        self.log("Unknown on the blockchain");
+        return callback();
+      }
+      initialbalance =  a_response.balance;
+    });
+    setInterval(function(){
+    getFromNode('http://'+server+'/api/accounts?address='+address, function(err, response, body){
+      var a = JSON.parse(body).account;
+      var balance =  a.balance;
+      if(initialbalance != balance){
+        refreshCurrentAccount(balance,address);
+      }
+    });
+  }, 10*1000);
+});  
 
 vorpal
   .command('message verify <message> <publickey>', 'Verify the <message> signed by the owner of <publickey> (you will be prompted to provide the signature)')
