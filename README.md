@@ -46,6 +46,7 @@ bpl> help
     account vanity <string>               Generate an address containing lowercased <string> (WARNING you could wait for long)
     message sign <message>                Sign a message
     message verify <message> <publickey>  Verify the <message> signed by the owner of <publickey> (you will be prompted to provide the signature)
+    account monitor <address>  Put the address you want to monitor and whenever te transaction occurs it will return the new balance and the address of the wallet 
     shBPL                                 No you don't want to use this command
 ```
 
