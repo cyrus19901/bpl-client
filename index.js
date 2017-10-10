@@ -201,6 +201,28 @@ function numberToFixed(x) {
 //     }
 // }, 8*1000);
 
+vorpal
+  .command('add network <name> <nethash> <peers> ', 'Add a network')
+  .action(function(args, callback) {
+    var self = this;
+    for (var n in networks){
+      if (networks[n].nethash == args.nethash){
+        self.log("Network already exists");
+        return callback();
+      }
+    }
+    network = {
+          nethash: args.nethash,
+          peers:args.peers
+        }
+    networks[args.name]= network;
+    var newNetwork = networks;
+    networks = newNetwork;
+    console.log(networks);
+    callback();
+  });
+
+
 
 vorpal
   .command('connect <network>', 'Connect to network. Network is testnet or mainnet')
