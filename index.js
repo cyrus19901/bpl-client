@@ -218,7 +218,7 @@ vorpal
     networks[args.name]= network;
     var newNetwork = networks;
     networks = newNetwork;
-    console.log(networks);
+    self.log(networks);
     callback();
   });
 
